@@ -14,6 +14,7 @@ const RegisterController = async (req: Request, res: Response) => {
         .status(400)
         .json({ success: false, message: errors.array()[0].msg });
     }
+
     const { firstName, lastName, email, password } = req.body;
 
     //check if user already exists
@@ -39,15 +40,11 @@ const RegisterController = async (req: Request, res: Response) => {
     }
     await Otp.create({ email, otp });
 
+    //hash the password
     let hashedPassword;
-    try {
-      hashedPassword = await bcrypt.hash(password, 10);
-    } catch (error: any) {
-      return res.status(500).json({
-        success: false,
-        message: `Hashing password error for ${password}: ` + error.message,
-      });
-    }
+    hashedPassword = await bcrypt.hash(password, 10);
+
+    //create the user
     await User.create({
       firstName,
       lastName,
@@ -55,12 +52,12 @@ const RegisterController = async (req: Request, res: Response) => {
       password: hashedPassword,
     });
 
+    //send the response
     res.status(200).json({
       success: true,
       message: "OTP sent successfully",
     });
   } catch (error: any) {
-    console.log(error.message);
     return res.status(500).json({ success: false, message: error.message });
   }
 };

@@ -3,10 +3,12 @@ import RegisterController from "../controllers/registerController";
 import ValidateUserController from "../controllers/validateUserController";
 import LoginController from "../controllers/loginController";
 import FetchUserDetailsController from "../controllers/fetchUserDetailsController";
-import FetchUser from "../utils/fetchUser";
+import FetchUser from "../utils/fetchUserMiddleware";
 const { body } = require("express-validator");
 
 const router = Router();
+
+//route to register a user
 router.post(
   "/register",
   [
@@ -20,6 +22,8 @@ router.post(
   ],
   RegisterController
 );
+
+//route to validate a user
 router.post(
   "/validate",
   [
@@ -31,6 +35,8 @@ router.post(
   ],
   ValidateUserController
 );
+
+//route to login a user
 router.post(
   "/login",
   [
@@ -40,6 +46,8 @@ router.post(
   ],
   LoginController
 );
+
+//route to fetch user details
 router.get("/fetchUserDetails", FetchUser, FetchUserDetailsController);
 
 export default router;

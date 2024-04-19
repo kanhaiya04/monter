@@ -4,6 +4,7 @@ import WorkDetails from "../models/workDetailsModel";
 import Otp from "../models/otpModel";
 import { validationResult } from "express-validator";
 
+//interface for the work details
 interface workDetails {
   title: string;
   companyName: string;
@@ -14,15 +15,19 @@ interface workDetails {
 
 const ValidateUserController = async (req: Request, res: Response) => {
   try {
+    //validation
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return res
         .status(400)
         .json({ success: false, message: errors.array()[0].msg });
     }
+
     const { otp, email, jobTitle, companyName } = req.body;
+
     // Check if user is present or not
     const checkUserPresent = await User.findOne({ email });
+
     // If user not found with provided email
     if (!checkUserPresent) {
       return res.status(401).json({
@@ -30,12 +35,15 @@ const ValidateUserController = async (req: Request, res: Response) => {
         message: "User is not registered",
       });
     }
+
+    // Check if user is already validated
     if (checkUserPresent.validated) {
       return res.status(400).json({
         success: false,
         message: "User is already validated",
       });
     }
+
     // Find the most recent OTP for the email
     const response = await Otp.find({ email }).sort({ createdAt: -1 }).limit(1);
     if (response.length === 0 || otp !== response[0].otp) {
@@ -45,6 +53,7 @@ const ValidateUserController = async (req: Request, res: Response) => {
       });
     }
 
+    // Create the work details
     const workDetailsData: workDetails = {
       title: jobTitle,
       companyName,
@@ -57,20 +66,23 @@ const ValidateUserController = async (req: Request, res: Response) => {
 
     if (req.body.jobStatus) workDetailsData.status = req.body.jobStatus;
 
+    // Create the work details
     const workDetails = await WorkDetails.create({
       ...workDetailsData,
     });
 
+    // Update the user with the work details and validated as true
     await User.findOneAndUpdate(
       { email },
       { workDetails: workDetails._id, validated: true }
     );
+
+    // Send the response
     return res.status(201).json({
       success: true,
       message: "User is validated successfully",
     });
   } catch (error: any) {
-    console.log(error.message);
     return res.status(500).json({ success: false, error: error.message });
   }
 };

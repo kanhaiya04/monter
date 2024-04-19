@@ -8,15 +8,19 @@ const otpGenerator = require("otp-generator");
 
 const LoginController = async (req: Request, res: Response) => {
   try {
+    //validation
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return res
         .status(400)
         .json({ success: false, message: errors.array()[0].msg });
     }
+
     const { email, password } = req.body;
+
     // Check if user is present or not
     const user = await User.findOne({ email });
+
     // If user not found with provided email
     if (!user) {
       return res.status(400).json({
@@ -24,7 +28,8 @@ const LoginController = async (req: Request, res: Response) => {
         message: "User is not registered",
       });
     }
-    // Check if user is validated or not
+
+    // Check if user is not validated
     if (!user.validated) {
       //generate otp
       let otp = otpGenerator.generate(6, {
@@ -59,17 +64,19 @@ const LoginController = async (req: Request, res: Response) => {
         id: user.id,
       },
     };
+
     // generate the jwt token
     const authToken = jwt.sign(data, process.env.JWT_SECRET, {
       expiresIn: "1d",
     });
+
+    // send the token
     return res.status(201).json({
       success: true,
       message: "User logged in successfully",
       token: authToken,
     });
   } catch (error: any) {
-    console.log(error.message);
     return res.status(500).json({ success: false, error: error.message });
   }
 };

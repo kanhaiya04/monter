@@ -17,6 +17,7 @@ const otpSchema = new Schema({
   },
 });
 
+//send otp email function use nodemailer to send the email
 const sendOtpEmail = async (email: string, otp: string) => {
   try {
     const mailResponse = await mailSender(
@@ -32,6 +33,7 @@ const sendOtpEmail = async (email: string, otp: string) => {
   }
 };
 
+//send otp email before saving the data in db
 otpSchema.pre("save", async function (next) {
   if (this.isNew) {
     await sendOtpEmail(this.email, this.otp);

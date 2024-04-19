@@ -12,6 +12,7 @@ const userSchema = new Schema({
   email: {
     type: "string",
     required: true,
+    unique: true,
   },
   password: {
     type: "string",
@@ -26,6 +27,10 @@ const userSchema = new Schema({
   workDetails: {
     type: Schema.Types.ObjectId,
     ref: "WorkDetails",
+  },
+  validated: {
+    type: "boolean",
+    default: false,
   },
   createdAt: {
     type: "date",

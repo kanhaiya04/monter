@@ -1,18 +1,20 @@
 import { Request, Response } from "express";
 import User from "../models/userModel";
 import Otp from "../models/otpModel";
+import { validationResult } from "express-validator";
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const otpGenerator = require("otp-generator");
 
 const LoginController = async (req: Request, res: Response) => {
   try {
-    const { email, password } = req.body;
-    if (!email || !password) {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
       return res
         .status(400)
-        .json({ success: false, message: "All fields are required" });
+        .json({ success: false, message: errors.array()[0].msg });
     }
+    const { email, password } = req.body;
     // Check if user is present or not
     const user = await User.findOne({ email });
     // If user not found with provided email

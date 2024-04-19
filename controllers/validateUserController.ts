@@ -2,15 +2,25 @@ import { Request, Response } from "express";
 import User from "../models/userModel";
 import WorkDetails from "../models/workDetailsModel";
 import Otp from "../models/otpModel";
+import { validationResult } from "express-validator";
+
+interface workDetails {
+  title: string;
+  companyName: string;
+  description?: string;
+  location?: string;
+  status?: string;
+}
 
 const ValidateUserController = async (req: Request, res: Response) => {
   try {
-    const { otp, email, jobTitle, companyName } = req.body;
-    if (!otp || !email || !jobTitle || !companyName) {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
       return res
         .status(400)
-        .json({ success: false, message: "All fields are required" });
+        .json({ success: false, message: errors.array()[0].msg });
     }
+    const { otp, email, jobTitle, companyName } = req.body;
     // Check if user is present or not
     const checkUserPresent = await User.findOne({ email });
     // If user not found with provided email
@@ -18,6 +28,12 @@ const ValidateUserController = async (req: Request, res: Response) => {
       return res.status(401).json({
         success: false,
         message: "User is not registered",
+      });
+    }
+    if (checkUserPresent.validated) {
+      return res.status(400).json({
+        success: false,
+        message: "User is already validated",
       });
     }
     // Find the most recent OTP for the email
@@ -29,12 +45,20 @@ const ValidateUserController = async (req: Request, res: Response) => {
       });
     }
 
-    const workDetails = await WorkDetails.create({
+    const workDetailsData: workDetails = {
       title: jobTitle,
       companyName,
-      description: req.body.jobDescription ? req.body.jobDescription : "",
-      location: req.body.joblocation ? req.body.joblocation : "",
-      status: req.body.jobStatus ? req.body.jobStatus : "full-time",
+    };
+    if (req.body.joblocation)
+      workDetailsData.location = req.body.jobDescription;
+
+    if (req.body.jobDescription)
+      workDetailsData.description = req.body.jobDescription;
+
+    if (req.body.jobStatus) workDetailsData.status = req.body.jobStatus;
+
+    const workDetails = await WorkDetails.create({
+      ...workDetailsData,
     });
 
     await User.findOneAndUpdate(

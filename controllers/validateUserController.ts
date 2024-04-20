@@ -23,7 +23,7 @@ const ValidateUserController = async (req: Request, res: Response) => {
         .json({ success: false, message: errors.array()[0].msg });
     }
 
-    const { otp, email, jobTitle, companyName } = req.body;
+    const { otp, email, location, age, jobTitle, companyName } = req.body;
 
     // Check if user is present or not
     const checkUserPresent = await User.findOne({ email });
@@ -74,7 +74,12 @@ const ValidateUserController = async (req: Request, res: Response) => {
     // Update the user with the work details and validated as true
     await User.findOneAndUpdate(
       { email },
-      { workDetails: workDetails._id, validated: true }
+      {
+        workDetails: workDetails._id,
+        validated: true,
+        location: location,
+        age: age,
+      }
     );
 
     // Send the response

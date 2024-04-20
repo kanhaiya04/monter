@@ -7,6 +7,8 @@ interface userData {
   firstName: string;
   lastName: string;
   email: string;
+  location?: string;
+  age?: number;
   jobTitle?: string;
   companyName?: string;
   jobDescription?: string;
@@ -39,6 +41,8 @@ const FetchUserDetailsController = async (req: Request, res: Response) => {
       lastName: user.lastName,
       email: user.email,
     };
+    if (user.location) userData.location = user.location;
+    if (user.age) userData.age = user.age;
 
     //find the work details of the user
     const workDetails = await WorkDetails.findById(user.workDetails);

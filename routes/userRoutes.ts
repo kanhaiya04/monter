@@ -30,6 +30,8 @@ router.post(
     //validation
     body("email", "Invalid email").isEmail(),
     body("otp", "Otp can't be empty").notEmpty(),
+    body("location", "Location can't be empty").notEmpty(),
+    body("age", "Age must be a positive integer").isInt({ min: 1 }),
     body("jobTitle", "Job title is required").notEmpty(),
     body("companyName", "Company name is required").notEmpty(),
   ],
